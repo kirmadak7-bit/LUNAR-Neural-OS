@@ -1,4 +1,4 @@
-// LUNAR Neural OS v8.1 (Fixed Syntax & Stable Debug)
+// LUNAR Neural OS v9.0 (Ultra-Fast & Stable)
 const GEMINI_API_KEY = 'AIzaSyBX7QvS90QNFqtuFZsG3QVCC5L7s8ytM2Y';
 const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
 const synth = window.speechSynthesis;
@@ -10,43 +10,7 @@ const voiceBtn = document.getElementById('voice-btn');
 const statusText = document.getElementById('lunar-status');
 
 let isListening = false;
-let activeModelUrl = null;
 
-// 1. Auto-Discovery Module (Fixed)
-async function discoverNeuralLink() {
-    statusText.textContent = "scanning neural links...";
-    const endpoints = [
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
-        'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
-        'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent'
-    ];
-
-    for (let url of endpoints) {
-        try {
-            const res = await fetch(`${url}?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: 'hi' }] }] })
-            });
-            if (res.ok) {
-                activeModelUrl = url;
-                statusText.textContent = "online";
-                return true;
-            } else {
-                console.warn(`Link failed (${res.status}): ${url}`);
-                if (res.status === 403) statusText.textContent = "Error 403: Restricted";
-                if (res.status === 401) statusText.textContent = "Error 401: Invalid Key";
-            }
-        } catch (e) {
-            console.error("Discovery Error:", e);
-        }
-    }
-    statusText.textContent = "offline mode";
-    return false;
-}
-
-// 2. Chat Logic
 function addMessage(text, sender) {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const div = document.createElement('div');
@@ -56,22 +20,29 @@ function addMessage(text, sender) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
+// Simple & Fast Gemini Call
 async function getGeminiResponse(prompt) {
-    if (!activeModelUrl) {
-        const found = await discoverNeuralLink();
-        if (!found) return getOfflineResponse(prompt);
-    }
-
     statusText.textContent = "typing...";
     try {
-        const response = await fetch(`${activeModelUrl}?key=${GEMINI_API_KEY}`, {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 sec timeout
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+            signal: controller.signal
         });
-        const data = await response.json();
-        return data.candidates[0].content.parts[0].text;
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        } else {
+            throw new Error("Link Failed");
+        }
     } catch (e) {
+        console.warn("LUNAR: Falling back to local brain.");
         return getOfflineResponse(prompt);
     } finally {
         statusText.textContent = "online";
@@ -79,43 +50,44 @@ async function getGeminiResponse(prompt) {
 }
 
 function getOfflineResponse(prompt) {
-    const responses = [
-        "System busy. Offline nodes active. Aapne poocha: " + prompt,
-        "LUNAR is running on backup intelligence. Connectivity issue.",
-        "Bhai, API response nahi de rahi, par main active hoon!",
-        "Neural sync unstable. Local backup active."
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
+    const p = prompt.toLowerCase();
+    if (p.includes('hi') || p.includes('hello')) return "LUNAR active! Kaise ho Bhai?";
+    if (p.includes('time')) return `System time: ${new Date().toLocaleTimeString()}`;
+    return "Command processed. Main abhi offline nodes use kar raha hoon.";
 }
 
 async function processCommand(input) {
     if (!input.trim()) return;
     addMessage(input, 'user');
     userInput.value = '';
+    
+    // Instant Visual Feedback
     const res = await getGeminiResponse(input);
     addMessage(res, 'lunar'); 
     speak(res);
 }
 
 function speak(text) {
-    if (synth.speaking) synth.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    const voices = synth.getVoices();
-    utter.voice = voices.find(v => v.name.includes('Google UK English Male')) || voices[0];
-    synth.speak(utter);
+    try {
+        if (synth.speaking) synth.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        const voices = synth.getVoices();
+        utter.voice = voices.find(v => v.name.includes('Google UK English Male')) || voices[0];
+        synth.speak(utter);
+    } catch (e) { console.error("TTS Error:", e); }
 }
 
 if (recognition) {
     recognition.onresult = (e) => processCommand(e.results[e.results.length - 1][0].transcript);
-    recognition.onstart = () => { isListening = true; statusText.textContent = "listening..."; };
-    recognition.onend = () => { isListening = false; statusText.textContent = "online"; };
 }
 
 sendBtn.addEventListener('click', () => processCommand(userInput.value));
 userInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') processCommand(userInput.value); });
-voiceBtn.addEventListener('click', () => { if (isListening) recognition.stop(); else recognition.start(); });
+voiceBtn.addEventListener('click', () => {
+    if (isListening) { recognition.stop(); isListening = false; }
+    else { recognition.start(); isListening = true; }
+});
 
 window.onload = () => {
-    discoverNeuralLink();
-    addMessage("LUNAR v8.1 Online. Syntax fixed.", 'lunar');
+    addMessage("LUNAR v9.0 Online. System Optimized.", 'lunar');
 };
