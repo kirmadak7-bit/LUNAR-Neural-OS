@@ -1,5 +1,6 @@
-// LUNAR Neural OS v12.0 (Neural Proxy - Force Connect)
-const GEMINI_API_KEY = 'AIzaSyBX7QvS90QNFqtuFZsG3QVCC5L7s8ytM2Y';
+// LUNAR Neural OS v13.0 (User Configurable Brain)
+let GEMINI_API_KEY = localStorage.getItem('LUNAR_API_KEY') || 'AIzaSyBX7QvS90QNFqtuFZsG3QVCC5L7s8ytM2Y';
+
 const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
 const synth = window.speechSynthesis;
 
@@ -9,7 +10,12 @@ const sendBtn = document.getElementById('send-btn');
 const voiceBtn = document.getElementById('voice-btn');
 const statusText = document.getElementById('lunar-status');
 
-let isListening = false;
+// Settings UI Elements
+const settingsBtn = document.getElementById('settings-btn');
+const settingsModal = document.getElementById('settings-modal');
+const apiKeyInput = document.getElementById('api-key-input');
+const saveKeyBtn = document.getElementById('save-key-btn');
+const closeSettings = document.getElementById('close-settings');
 
 function addMessage(text, sender) {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -20,44 +26,27 @@ function addMessage(text, sender) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// v12.0 Force-Connect Logic
+// Global Gemini Call
 async function getGeminiResponse(prompt) {
     statusText.textContent = "typing...";
     try {
-        // Try the most direct and simple v1beta call (Google AI Studio Standard)
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: `Respond naturally and smartly like an AI OS to: ${prompt}` }] }]
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
 
         if (response.ok) {
             const data = await response.json();
             return data.candidates[0].content.parts[0].text;
         } else {
-            const err = await response.json();
-            throw new Error(err.error?.message || "Connection Denied");
+            throw new Error("API Blocked");
         }
     } catch (e) {
-        console.error("Gemini Error:", e);
-        // If API fails, use a "Smart Local AI" that's better than v11
-        return getSmartLocalResponse(prompt);
+        return "LUNAR Brain offline. Please update your API Key in Settings (⚙️).";
     } finally {
         statusText.textContent = "online";
     }
-}
-
-// Improved Local Brain
-function getSmartLocalResponse(prompt) {
-    const p = prompt.toLowerCase();
-    if (p.includes('time')) return `The current time is ${new Date().toLocaleTimeString()}.`;
-    if (p.includes('date')) return `Today's date is ${new Date().toLocaleDateString()}.`;
-    
-    return "Bhai, LUNAR Neural Link (Gemini) abhi bhi block ho raha hai. Iska matlab aapki API Key restricted hai. Ek baar AI Studio mein jaakar 'Enable API' button check kijiye. Tab tak main basic help kar sakta hoon.";
 }
 
 async function processCommand(input) {
@@ -65,7 +54,8 @@ async function processCommand(input) {
     addMessage(input, 'user');
     userInput.value = '';
     const res = await getGeminiResponse(input);
-    addMessage(res, 'lunar'); speak(res);
+    addMessage(res, 'lunar'); 
+    speak(res);
 }
 
 function speak(text) {
@@ -78,13 +68,30 @@ function speak(text) {
     } catch (e) {}
 }
 
+// Settings Logic
+settingsBtn.onclick = () => {
+    settingsModal.style.display = 'block';
+    apiKeyInput.value = GEMINI_API_KEY;
+};
+
+closeSettings.onclick = () => settingsModal.style.display = 'none';
+
+saveKeyBtn.onclick = () => {
+    const newKey = apiKeyInput.value.trim();
+    if (newKey) {
+        GEMINI_API_KEY = newKey;
+        localStorage.setItem('LUNAR_API_KEY', newKey);
+        alert("Neural Link Updated! Refreshing...");
+        location.reload();
+    }
+};
+
 sendBtn.addEventListener('click', () => processCommand(userInput.value));
 userInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') processCommand(userInput.value); });
 voiceBtn.addEventListener('click', () => {
-    if (isListening) { recognition.stop(); isListening = false; }
-    else { recognition.start(); isListening = true; }
+    if (recognition) recognition.start();
 });
 
 window.onload = () => {
-    addMessage("LUNAR v12.0 (Neural Proxy) Online. System Re-connected.", 'lunar');
+    addMessage("LUNAR v13.0 (Settings Edition). Update your brain in Neural Settings (⚙️).", 'lunar');
 };
