@@ -1,4 +1,4 @@
-// LUNAR Neural OS v7.0 (Neural Evolution)
+// LUNAR Neural OS v8.0 (Auto-Neural Discovery)
 const GEMINI_API_KEY = 'AIzaSyBX7QvS90QNFqtuFZsG3QVCC5L7s8ytM2Y';
 const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
 const synth = window.speechSynthesis;
@@ -10,7 +10,38 @@ const voiceBtn = document.getElementById('voice-btn');
 const statusText = document.getElementById('lunar-status');
 
 let isListening = false;
+let activeModelUrl = null;
 
+// 1. Auto-Discovery Module
+async function discoverNeuralLink() {
+    statusText.textContent = "scanning neural links...";
+    const endpoints = [
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+        'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
+        'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent'
+    ];
+
+    for (let url of endpoints) {
+        try {
+            const res = await fetch(`${url}?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: 'hi' }] }] })
+            });
+            if (res.ok) {
+                activeModelUrl = url;
+                console.log("LUNAR: Active Neural Link found at " + url);
+                statusText.textContent = "online";
+                return true;
+            }
+        } catch (e) { console.warn("Link failed: " + url); }
+    }
+    statusText.textContent = "offline mode";
+    return false;
+}
+
+// 2. Chat Logic
 function addMessage(text, sender) {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const div = document.createElement('div');
@@ -20,38 +51,34 @@ function addMessage(text, sender) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Advanced Neural Fetch
 async function getGeminiResponse(prompt) {
+    if (!activeModelUrl) {
+        const found = await discoverNeuralLink();
+        if (!found) return getOfflineResponse(prompt);
+    }
+
     statusText.textContent = "typing...";
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`${activeModelUrl}?key=${GEMINI_API_KEY}`, {
             method: 'POST',
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }]
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
-
-        if (response.ok) {
-            const data = await response.json();
-            return data.candidates[0].content.parts[0].text;
-        } else {
-            throw new Error("API Link Failed");
-        }
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
     } catch (e) {
-        return getDynamicOfflineResponse(prompt);
+        return getOfflineResponse(prompt);
     } finally {
         statusText.textContent = "online";
     }
 }
 
-// Dynamic Offline Brain (When API Fails)
-function getDynamicOfflineResponse(prompt) {
+function getOfflineResponse(prompt) {
     const responses = [
-        "System link thoda unstable hai, par main aapki baat samajh raha hoon. Kya hum offline mode mein continue karein?",
-        "Neural sync error. Lekin mere local nodes active hain. Aapne kaha: " + prompt,
-        "Interesting point. Mera brain thoda connectivity issue face kar raha hai, par main active hoon.",
-        "Aapki request acknowledged. Main offline intelligence use kar raha hoon abhi.",
-        "Bhai, API connection mein dikat hai, par LUNAR har nahi maanega. Poochiye kya poochna hai!"
+        "Bhai, API response nahi de rahi, shayad key restricted hai. Ek baar AI Studio mein permissions check kijiye.",
+        "System busy. Offline neural nodes active hain. Aapne poocha: " + prompt,
+        "LUNAR is running on local backup intelligence. Connectivity is low.",
+        "Bhai, Google servers block kar rahe hain. Shayad key mein koi issue hai."
     ];
     return responses[Math.floor(Math.random() * responses.length)];
 }
@@ -60,10 +87,8 @@ async function processCommand(input) {
     if (!input.trim()) return;
     addMessage(input, 'user');
     userInput.value = '';
-    
     const res = await getGeminiResponse(input);
-    addMessage(res, 'lunar'); 
-    speak(res);
+    addMessage(res, 'lunar'); speak(res);
 }
 
 function speak(text) {
@@ -85,5 +110,6 @@ userInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') processCom
 voiceBtn.addEventListener('click', () => { if (isListening) recognition.stop(); else recognition.start(); });
 
 window.onload = () => {
-    addMessage("LUNAR V7 (Neural Evolution) Online. System is ready.", 'lunar');
+    discoverNeuralLink();
+    addMessage("LUNAR v8.0: Discovery Module Active. Scanning Brain...", 'lunar');
 };
