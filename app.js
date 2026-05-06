@@ -1,5 +1,4 @@
-// LUNAR Neural OS v10.0 (Neural Independence)
-const GEMINI_API_KEY = 'AIzaSyBX7QvS90QNFqtuFZsG3QVCC5L7s8ytM2Y';
+// LUNAR Neural OS v11.0 (Autonomous Core) - No API Needed
 const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
 const synth = window.speechSynthesis;
 
@@ -20,45 +19,32 @@ function addMessage(text, sender) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Neural Brain with Advanced Fallback
-async function getLUNARResponse(prompt) {
-    statusText.textContent = "typing...";
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-            const data = await response.json();
-            return data.candidates[0].content.parts[0].text;
-        }
-    } catch (e) { console.log("LUNAR: API Offline. Using Neural Core."); }
-
-    return getNeuralCoreResponse(prompt);
-}
-
-// The "Neural Core" (Advanced Offline Brain)
-function getNeuralCoreResponse(prompt) {
+// Autonomous Brain Logic (Smart Pattern Matching)
+function getAutonomousResponse(prompt) {
     const p = prompt.toLowerCase();
     
-    // Knowledge Base
-    if (p.includes('kaise ho') || p.includes('how are you')) return "Bhai, main ekdum fit hoon! LUNAR Neural Core active hai. Aap bataiye kya chal raha hai?";
-    if (p.includes('who created you') || p.includes('kisne banaya')) return "Mujhe Antigravity AI ne develop kiya hai, ek neural experiment ke taur par.";
-    if (p.includes('time')) return `Abhi system time ${new Date().toLocaleTimeString()} hai.`;
-    if (p.includes('weather')) return "Mera neural sensor clear sky dikha raha hai. Temperature normal hai.";
-    if (p.includes('joke')) return "Ek AI ne dusre AI se kaha: 'Bhai, thoda RAM dena, bohot hang ho raha hoon!' 😂";
-    if (p.includes('future')) return "The future is digital, aur LUNAR uska ek bada hissa hai. Hum saath mein bohot kuch karenge!";
-    if (p.includes('india')) return "India ek bohot hi amazing aur fast-growing desh hai. Wahan ke log aur tech dono kamaal hain!";
-    if (p.includes('dhanyavad') || p.includes('thanks')) return "Arey shukriya ki kya baat hai Bhai, mera toh kaam hi aapki help karna hai!";
+    // Core Personalities
+    const greetings = ["Bhai, LUNAR Neural Link active hai! Kaise ho?", "System online! Main taiyar hoon aapke commands ke liye.", "Namaste! LUNAR Neural OS v11.0 initialized.", "Hello! Neural nodes are firing at 100%."];
+    const techReponses = ["Digital world bohot fast hai, aur LUNAR uska leader hai.", "Mera hardware abhi offline hai par mera dimaag 24/7 chalta hai.", "Technology is magic, aur main aapka magician hoon!"];
+    const wisdom = ["Success mehnat se aati hai, aur coding se magic!", "Kal ka din aaj se behtar hoga, bas neural link banaye rakhein.", "Life is like a loop, har baar kuch naya seekhna chahiye."];
 
-    return "Aapki baat mere neural nodes tak pahunch gayi hai. Abhi main offline mode mein hoon, par main har cheez sikh raha hoon. Poochiye aur kya jaanna hai?";
+    if (p.includes('hi') || p.includes('hello')) return greetings[Math.floor(Math.random() * greetings.length)];
+    if (p.includes('kaise ho') || p.includes('how are you')) return "Main ekdum solid hoon Bhai! Aap batao, aaj kya plan hai?";
+    if (p.includes('tech') || p.includes('computer')) return techReponses[Math.floor(Math.random() * techReponses.length)];
+    if (p.includes('joke')) return "Ek robot ne dusre se pucha: 'Tu ne lunch kiya?' Dusra bola: 'Ha, 2-3 Chips kha liye!' 😂";
+    if (p.includes('motivate') || p.includes('thought')) return wisdom[Math.floor(Math.random() * wisdom.length)];
+    if (p.includes('time')) return `Abhi system time ${new Date().toLocaleTimeString()} ho raha hai.`;
+    if (p.includes('who are you')) return "I am LUNAR. Your personal Neural OS. Autonomous, bold, and intelligent.";
+    if (p.includes('open')) return "Launch sequence initialized. (Opening your request in a new node).";
+    
+    // Default smart fallback
+    const fallbacks = [
+        "Aapki baat mere neural core mein register ho gayi hai. Is par main zaroor kaam karunga.",
+        "Dilchasp baat hai! Iske baare mein main aur sochna chahunga.",
+        "Acknowledged. LUNAR is learning from your input.",
+        "System optimized. Aapka agla command kya hai?"
+    ];
+    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
 }
 
 async function processCommand(input) {
@@ -66,10 +52,13 @@ async function processCommand(input) {
     addMessage(input, 'user');
     userInput.value = '';
     
-    const res = await getLUNARResponse(input);
-    addMessage(res, 'lunar'); 
-    speak(res);
-    statusText.textContent = "online";
+    statusText.textContent = "typing...";
+    setTimeout(() => {
+        const res = getAutonomousResponse(input);
+        addMessage(res, 'lunar'); 
+        speak(res);
+        statusText.textContent = "online";
+    }, 800);
 }
 
 function speak(text) {
@@ -90,5 +79,5 @@ voiceBtn.addEventListener('click', () => {
 });
 
 window.onload = () => {
-    addMessage("LUNAR v10.0 (Neural Independence) Online. Main taiyar hoon, Bhai!", 'lunar');
+    addMessage("LUNAR v11.0 (Autonomous Core) Online. Main ab kisi API par depend nahi hoon!", 'lunar');
 };
