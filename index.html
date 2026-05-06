@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUNAR | WhatsApp OS</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <canvas id="neural-canvas"></canvas>
+    
+    <div class="app-container">
+        <!-- WhatsApp Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-avatar">
+                    <img src="lunar_avatar_1778060498923.png" width="40" height="40" alt="Me">
+                </div>
+                <div class="sidebar-actions">
+                    <button class="icon-btn">💬</button>
+                    <button class="icon-btn">⋮</button>
+                </div>
+            </div>
+            <div class="chat-list">
+                <div class="chat-item">
+                    <div class="lunar-orb-mini"></div>
+                    <div class="chat-info">
+                        <h3>LUNAR Core</h3>
+                        <p>System Online</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main-chat">
+            <div class="chat-header">
+                <div class="lunar-orb-mini"></div>
+                <div class="header-info">
+                    <h2 id="lunar-name">LUNAR</h2>
+                    <p id="lunar-status">online</p>
+                </div>
+                <div class="header-actions" style="margin-left: auto;">
+                    <button class="icon-btn">🔍</button>
+                    <button class="icon-btn">⋮</button>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messages">
+                <!-- Messages will appear here -->
+            </div>
+
+            <div class="chat-footer">
+                <button id="voice-btn" class="icon-btn">🎤</button>
+                <div class="input-wrapper">
+                    <input type="text" id="user-input" placeholder="Type a message" autocomplete="off">
+                </div>
+                <button id="send-btn" class="icon-btn">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
