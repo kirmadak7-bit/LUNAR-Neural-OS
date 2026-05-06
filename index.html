@@ -42,8 +42,19 @@
                     <p id="lunar-status">online</p>
                 </div>
                 <div class="header-actions" style="margin-left: auto;">
-                    <button class="icon-btn">🔍</button>
+                    <button class="icon-btn" id="settings-btn">⚙️</button>
                     <button class="icon-btn">⋮</button>
+                </div>
+            </div>
+
+            <!-- Settings Modal -->
+            <div id="settings-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--header-bg); padding:20px; border-radius:15px; border:1px solid var(--accent-primary); z-index:1000; width:90%; max-width:400px;">
+                <h3 style="margin-bottom:15px; color:var(--accent-primary);">Neural Settings</h3>
+                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">Paste your Google Gemini API Key here:</p>
+                <input type="text" id="api-key-input" style="width:100%; background:#111b21; border:1px solid #444; color:white; padding:10px; border-radius:5px; margin-bottom:15px;" placeholder="AIzaSy...">
+                <div style="display:flex; gap:10px;">
+                    <button id="save-key-btn" style="flex:1; background:var(--accent-primary); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Save & Connect</button>
+                    <button id="close-settings" style="flex:1; background:#444; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Close</button>
                 </div>
             </div>
 
