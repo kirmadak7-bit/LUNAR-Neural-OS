@@ -1,4 +1,4 @@
-// LUNAR Neural OS v8.0 (Auto-Neural Discovery)
+// LUNAR Neural OS v8.1 (Fixed Syntax & Stable Debug)
 const GEMINI_API_KEY = 'AIzaSyBX7QvS90QNFqtuFZsG3QVCC5L7s8ytM2Y';
 const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
 const synth = window.speechSynthesis;
@@ -12,7 +12,7 @@ const statusText = document.getElementById('lunar-status');
 let isListening = false;
 let activeModelUrl = null;
 
-// 1. Auto-Discovery Module
+// 1. Auto-Discovery Module (Fixed)
 async function discoverNeuralLink() {
     statusText.textContent = "scanning neural links...";
     const endpoints = [
@@ -31,14 +31,16 @@ async function discoverNeuralLink() {
             });
             if (res.ok) {
                 activeModelUrl = url;
-                console.log("LUNAR: Active Neural Link found at " + url);
                 statusText.textContent = "online";
                 return true;
             } else {
                 console.warn(`Link failed (${res.status}): ${url}`);
-                if (res.status === 403) statusText.textContent = "Error 403: Location/Key Blocked";
+                if (res.status === 403) statusText.textContent = "Error 403: Restricted";
                 if (res.status === 401) statusText.textContent = "Error 401: Invalid Key";
             }
+        } catch (e) {
+            console.error("Discovery Error:", e);
+        }
     }
     statusText.textContent = "offline mode";
     return false;
@@ -78,10 +80,10 @@ async function getGeminiResponse(prompt) {
 
 function getOfflineResponse(prompt) {
     const responses = [
-        "Bhai, API response nahi de rahi, shayad key restricted hai. Ek baar AI Studio mein permissions check kijiye.",
-        "System busy. Offline neural nodes active hain. Aapne poocha: " + prompt,
-        "LUNAR is running on local backup intelligence. Connectivity is low.",
-        "Bhai, Google servers block kar rahe hain. Shayad key mein koi issue hai."
+        "System busy. Offline nodes active. Aapne poocha: " + prompt,
+        "LUNAR is running on backup intelligence. Connectivity issue.",
+        "Bhai, API response nahi de rahi, par main active hoon!",
+        "Neural sync unstable. Local backup active."
     ];
     return responses[Math.floor(Math.random() * responses.length)];
 }
@@ -91,7 +93,8 @@ async function processCommand(input) {
     addMessage(input, 'user');
     userInput.value = '';
     const res = await getGeminiResponse(input);
-    addMessage(res, 'lunar'); speak(res);
+    addMessage(res, 'lunar'); 
+    speak(res);
 }
 
 function speak(text) {
@@ -114,5 +117,5 @@ voiceBtn.addEventListener('click', () => { if (isListening) recognition.stop(); 
 
 window.onload = () => {
     discoverNeuralLink();
-    addMessage("LUNAR v8.0: Discovery Module Active. Scanning Brain...", 'lunar');
+    addMessage("LUNAR v8.1 Online. Syntax fixed.", 'lunar');
 };
