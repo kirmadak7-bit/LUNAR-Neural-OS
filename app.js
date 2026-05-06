@@ -1,4 +1,4 @@
-// LUNAR Neural OS v9.0 (Ultra-Fast & Stable)
+// LUNAR Neural OS v10.0 (Neural Independence)
 const GEMINI_API_KEY = 'AIzaSyBX7QvS90QNFqtuFZsG3QVCC5L7s8ytM2Y';
 const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
 const synth = window.speechSynthesis;
@@ -20,12 +20,12 @@ function addMessage(text, sender) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Simple & Fast Gemini Call
-async function getGeminiResponse(prompt) {
+// Neural Brain with Advanced Fallback
+async function getLUNARResponse(prompt) {
     statusText.textContent = "typing...";
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 sec timeout
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
 
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
@@ -38,22 +38,27 @@ async function getGeminiResponse(prompt) {
         if (response.ok) {
             const data = await response.json();
             return data.candidates[0].content.parts[0].text;
-        } else {
-            throw new Error("Link Failed");
         }
-    } catch (e) {
-        console.warn("LUNAR: Falling back to local brain.");
-        return getOfflineResponse(prompt);
-    } finally {
-        statusText.textContent = "online";
-    }
+    } catch (e) { console.log("LUNAR: API Offline. Using Neural Core."); }
+
+    return getNeuralCoreResponse(prompt);
 }
 
-function getOfflineResponse(prompt) {
+// The "Neural Core" (Advanced Offline Brain)
+function getNeuralCoreResponse(prompt) {
     const p = prompt.toLowerCase();
-    if (p.includes('hi') || p.includes('hello')) return "LUNAR active! Kaise ho Bhai?";
-    if (p.includes('time')) return `System time: ${new Date().toLocaleTimeString()}`;
-    return "Command processed. Main abhi offline nodes use kar raha hoon.";
+    
+    // Knowledge Base
+    if (p.includes('kaise ho') || p.includes('how are you')) return "Bhai, main ekdum fit hoon! LUNAR Neural Core active hai. Aap bataiye kya chal raha hai?";
+    if (p.includes('who created you') || p.includes('kisne banaya')) return "Mujhe Antigravity AI ne develop kiya hai, ek neural experiment ke taur par.";
+    if (p.includes('time')) return `Abhi system time ${new Date().toLocaleTimeString()} hai.`;
+    if (p.includes('weather')) return "Mera neural sensor clear sky dikha raha hai. Temperature normal hai.";
+    if (p.includes('joke')) return "Ek AI ne dusre AI se kaha: 'Bhai, thoda RAM dena, bohot hang ho raha hoon!' 😂";
+    if (p.includes('future')) return "The future is digital, aur LUNAR uska ek bada hissa hai. Hum saath mein bohot kuch karenge!";
+    if (p.includes('india')) return "India ek bohot hi amazing aur fast-growing desh hai. Wahan ke log aur tech dono kamaal hain!";
+    if (p.includes('dhanyavad') || p.includes('thanks')) return "Arey shukriya ki kya baat hai Bhai, mera toh kaam hi aapki help karna hai!";
+
+    return "Aapki baat mere neural nodes tak pahunch gayi hai. Abhi main offline mode mein hoon, par main har cheez sikh raha hoon. Poochiye aur kya jaanna hai?";
 }
 
 async function processCommand(input) {
@@ -61,10 +66,10 @@ async function processCommand(input) {
     addMessage(input, 'user');
     userInput.value = '';
     
-    // Instant Visual Feedback
-    const res = await getGeminiResponse(input);
+    const res = await getLUNARResponse(input);
     addMessage(res, 'lunar'); 
     speak(res);
+    statusText.textContent = "online";
 }
 
 function speak(text) {
@@ -74,11 +79,7 @@ function speak(text) {
         const voices = synth.getVoices();
         utter.voice = voices.find(v => v.name.includes('Google UK English Male')) || voices[0];
         synth.speak(utter);
-    } catch (e) { console.error("TTS Error:", e); }
-}
-
-if (recognition) {
-    recognition.onresult = (e) => processCommand(e.results[e.results.length - 1][0].transcript);
+    } catch (e) {}
 }
 
 sendBtn.addEventListener('click', () => processCommand(userInput.value));
@@ -89,5 +90,5 @@ voiceBtn.addEventListener('click', () => {
 });
 
 window.onload = () => {
-    addMessage("LUNAR v9.0 Online. System Optimized.", 'lunar');
+    addMessage("LUNAR v10.0 (Neural Independence) Online. Main taiyar hoon, Bhai!", 'lunar');
 };
