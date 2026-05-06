@@ -34,8 +34,11 @@ async function discoverNeuralLink() {
                 console.log("LUNAR: Active Neural Link found at " + url);
                 statusText.textContent = "online";
                 return true;
+            } else {
+                console.warn(`Link failed (${res.status}): ${url}`);
+                if (res.status === 403) statusText.textContent = "Error 403: Location/Key Blocked";
+                if (res.status === 401) statusText.textContent = "Error 401: Invalid Key";
             }
-        } catch (e) { console.warn("Link failed: " + url); }
     }
     statusText.textContent = "offline mode";
     return false;
