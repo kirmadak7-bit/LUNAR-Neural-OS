@@ -1,4 +1,5 @@
-// LUNAR Neural OS v11.0 (Autonomous Core) - No API Needed
+// LUNAR Neural OS v12.0 (Neural Proxy - Force Connect)
+const GEMINI_API_KEY = 'AIzaSyBX7QvS90QNFqtuFZsG3QVCC5L7s8ytM2Y';
 const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
 const synth = window.speechSynthesis;
 
@@ -19,46 +20,52 @@ function addMessage(text, sender) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Autonomous Brain Logic (Smart Pattern Matching)
-function getAutonomousResponse(prompt) {
-    const p = prompt.toLowerCase();
-    
-    // Core Personalities
-    const greetings = ["Bhai, LUNAR Neural Link active hai! Kaise ho?", "System online! Main taiyar hoon aapke commands ke liye.", "Namaste! LUNAR Neural OS v11.0 initialized.", "Hello! Neural nodes are firing at 100%."];
-    const techReponses = ["Digital world bohot fast hai, aur LUNAR uska leader hai.", "Mera hardware abhi offline hai par mera dimaag 24/7 chalta hai.", "Technology is magic, aur main aapka magician hoon!"];
-    const wisdom = ["Success mehnat se aati hai, aur coding se magic!", "Kal ka din aaj se behtar hoga, bas neural link banaye rakhein.", "Life is like a loop, har baar kuch naya seekhna chahiye."];
+// v12.0 Force-Connect Logic
+async function getGeminiResponse(prompt) {
+    statusText.textContent = "typing...";
+    try {
+        // Try the most direct and simple v1beta call (Google AI Studio Standard)
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `Respond naturally and smartly like an AI OS to: ${prompt}` }] }]
+            })
+        });
 
-    if (p.includes('hi') || p.includes('hello')) return greetings[Math.floor(Math.random() * greetings.length)];
-    if (p.includes('kaise ho') || p.includes('how are you')) return "Main ekdum solid hoon Bhai! Aap batao, aaj kya plan hai?";
-    if (p.includes('tech') || p.includes('computer')) return techReponses[Math.floor(Math.random() * techReponses.length)];
-    if (p.includes('joke')) return "Ek robot ne dusre se pucha: 'Tu ne lunch kiya?' Dusra bola: 'Ha, 2-3 Chips kha liye!' 😂";
-    if (p.includes('motivate') || p.includes('thought')) return wisdom[Math.floor(Math.random() * wisdom.length)];
-    if (p.includes('time')) return `Abhi system time ${new Date().toLocaleTimeString()} ho raha hai.`;
-    if (p.includes('who are you')) return "I am LUNAR. Your personal Neural OS. Autonomous, bold, and intelligent.";
-    if (p.includes('open')) return "Launch sequence initialized. (Opening your request in a new node).";
+        if (response.ok) {
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        } else {
+            const err = await response.json();
+            throw new Error(err.error?.message || "Connection Denied");
+        }
+    } catch (e) {
+        console.error("Gemini Error:", e);
+        // If API fails, use a "Smart Local AI" that's better than v11
+        return getSmartLocalResponse(prompt);
+    } finally {
+        statusText.textContent = "online";
+    }
+}
+
+// Improved Local Brain
+function getSmartLocalResponse(prompt) {
+    const p = prompt.toLowerCase();
+    if (p.includes('time')) return `The current time is ${new Date().toLocaleTimeString()}.`;
+    if (p.includes('date')) return `Today's date is ${new Date().toLocaleDateString()}.`;
     
-    // Default smart fallback
-    const fallbacks = [
-        "Aapki baat mere neural core mein register ho gayi hai. Is par main zaroor kaam karunga.",
-        "Dilchasp baat hai! Iske baare mein main aur sochna chahunga.",
-        "Acknowledged. LUNAR is learning from your input.",
-        "System optimized. Aapka agla command kya hai?"
-    ];
-    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+    return "Bhai, LUNAR Neural Link (Gemini) abhi bhi block ho raha hai. Iska matlab aapki API Key restricted hai. Ek baar AI Studio mein jaakar 'Enable API' button check kijiye. Tab tak main basic help kar sakta hoon.";
 }
 
 async function processCommand(input) {
     if (!input.trim()) return;
     addMessage(input, 'user');
     userInput.value = '';
-    
-    statusText.textContent = "typing...";
-    setTimeout(() => {
-        const res = getAutonomousResponse(input);
-        addMessage(res, 'lunar'); 
-        speak(res);
-        statusText.textContent = "online";
-    }, 800);
+    const res = await getGeminiResponse(input);
+    addMessage(res, 'lunar'); speak(res);
 }
 
 function speak(text) {
@@ -79,5 +86,5 @@ voiceBtn.addEventListener('click', () => {
 });
 
 window.onload = () => {
-    addMessage("LUNAR v11.0 (Autonomous Core) Online. Main ab kisi API par depend nahi hoon!", 'lunar');
+    addMessage("LUNAR v12.0 (Neural Proxy) Online. System Re-connected.", 'lunar');
 };
